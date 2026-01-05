@@ -1,0 +1,2842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supernova Staff Panel</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- ADDED: Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js"></script>
+    <style>
+        /* ... (ALL YOUR EXISTING CSS CODE STAYS EXACTLY THE SAME) ... */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h1 {
+            color: #667eea;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .password-wrapper {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .dashboard {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        .dashboard-content {
+            padding: 30px;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .bg-blue-500 { background: #3b82f6; }
+        .bg-yellow-500 { background: #f59e0b; }
+        .bg-purple-500 { background: #8b5cf6; }
+        .bg-green-500 { background: #10b981; }
+        .bg-teal-500 { background: #14b8a6; }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        
+        .filter-select {
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            min-width: 200px;
+        }
+        
+        .table-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #667eea;
+            color: white;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        tbody tr:hover {
+            background: #f0f2ff;
+        }
+        
+        td {
+            padding: 15px;
+        }
+        
+        .badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-estimated {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+        
+        .badge-paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+            border: none;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+        }
+        
+        .btn-info {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+        }
+        
+        .no-orders {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .no-orders i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            color: #333;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .order-preview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .preview-section {
+            margin-bottom: 25px;
+        }
+        
+        .preview-section h3 {
+            font-size: 16px;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .preview-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .notification.success {
+            background: #10b981;
+        }
+        
+        .notification.error {
+            background: #ef4444;
+        }
+        
+        .notification.info {
+            background: #0ea5e9;
+        }
+        
+        .notification.warning {
+            background: #f59e0b;
+        }
+        
+        /* Customers Page */
+        .customers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .customer-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            transition: all 0.3s;
+        }
+        
+        .customer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .customer-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .customer-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .customer-info h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .customer-info p {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .customer-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .customer-stat {
+            text-align: center;
+        }
+        
+        .customer-stat .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .customer-stat .label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .order-preview-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 800px;
+            }
+        }
+        
+        /* ADDED: Firebase Status Indicator */
+        .firebase-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 999;
+            background: #f8f9fa;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .firebase-status.connected {
+            color: #10b981;
+        }
+        
+        .firebase-status.disconnected {
+            color: #ef4444;
+        }
+        
+        .firebase-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .firebase-status.connected .dot {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        
+        .firebase-status.disconnected .dot {
+            background: #ef4444;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* ADDED: Refresh Orders Button */
+        .refresh-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #0284c7;
+        }
+        
+        .refresh-btn.loading i {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ADDED: Order Details Page */
+        .order-details-page {
+            background: white;
+            min-height: 100vh;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        .order-details-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .order-details-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        .order-details-content {
+            padding: 30px;
+        }
+        
+        .order-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .order-info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        
+        .order-info-card h3 {
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .order-info-card .info-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .order-info-card .info-label {
+            font-weight: 600;
+            color: #555;
+            min-width: 150px;
+        }
+        
+        /* FIXED: Address text alignment */
+        .order-info-card .info-value {
+            color: #333;
+            flex: 1;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        
+        /* FIXED: Address display for structured addresses */
+        .address-details {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .address-line {
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        /* ADDED: Tracking Status Section */
+        .tracking-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .tracking-section h3 {
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tracking-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .tracking-step {
+            flex: 1;
+            min-width: 150px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .tracking-step.active {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .tracking-step.completed {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .tracking-step .step-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .tracking-step .step-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .tracking-step.active .step-icon {
+            background: #10b981;
+            color: white;
+        }
+        
+        .tracking-step.completed .step-icon {
+            background: #10b981;
+            color: white;
+        }
+        
+        .tracking-step .step-icon i {
+            font-size: 12px;
+        }
+        
+        .tracking-step .step-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+        }
+        
+        .tracking-step.completed .step-checkbox {
+            background: #10b981;
+            border-color: #10b981;
+            position: relative;
+        }
+        
+        .tracking-step.completed .step-checkbox:after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+        }
+        
+        .tracking-step .step-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .tracking-step .step-date {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* ADDED: Estimate Section */
+        .estimate-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .estimate-section h3 {
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .estimate-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .estimate-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .tracking-step {
+                min-width: 100%;
+            }
+        }
+        
+        /* ADDED: Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        /* ADDED: Customer Message Button */
+        .message-customer-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .message-customer-btn:hover {
+            background: #1da851;
+            transform: translateY(-2px);
+        }
+
+        /* ADDED: New Order Notification */
+        .new-order-notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1002;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .new-order-notification .close-notification {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        /* ADDED: Sync Status Indicator */
+        .sync-status {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            z-index: 999;
+            background: #f8f9fa;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sync-status.syncing {
+            color: #f59e0b;
+            border: 1px solid #f59e0b;
+        }
+
+        .sync-status.synced {
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .sync-status .sync-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .sync-status.syncing .sync-dot {
+            background: #f59e0b;
+            animation: pulse 1.5s infinite;
+        }
+
+        .sync-status.synced .sync-dot {
+            background: #10b981;
+        }
+
+        /* ADDED: Message Modal */
+        .message-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1100;
+        }
+
+        .message-modal.hidden {
+            display: none;
+        }
+
+        .message-modal-content {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            padding: 25px;
+        }
+
+        .message-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .message-modal-header h3 {
+            color: #333;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .message-modal-body textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 15px;
+        }
+
+        .message-modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <!-- ALL YOUR EXISTING HTML CODE -->
+    <div class="container">
+        <!-- Login Page -->
+        <div id="login-page" class="login-container">
+            <div class="login-box">
+                <div class="login-header">
+                    <h1><i class="fas fa-crown"></i> Supernova Staff</h1>
+                    <p>Admin Control Panel</p>
+                </div>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" class="form-control" placeholder="Enter your username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+                            <button type="button" id="toggle-password" class="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Dashboard -->
+        <div id="dashboard" class="dashboard hidden">
+            <div class="dashboard-header">
+                <h1><i class="fas fa-crown"></i> Staff Dashboard</h1>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span id="username-display">Admin</span>
+                    <button onclick="logout()" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <div class="stats-container" id="stats-container">
+                    <!-- Stats will be loaded here -->
+                </div>
+                
+                <div class="filters">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input" placeholder="Search orders...">
+                    </div>
+                    <select id="status-filter" class="filter-select">
+                        <option value="all">All Orders</option>
+                        <option value="pending">Pending Estimation</option>
+                        <option value="estimated">Estimated</option>
+                        <option value="paid">Paid</option>
+                    </select>
+                    <button onclick="loadOrders()" class="refresh-btn" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Phone</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Price</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body">
+                            <!-- Orders will be loaded here -->
+                        </tbody>
+                    </table>
+                    <div id="no-orders" class="no-orders hidden">
+                        <i class="fas fa-inbox"></i>
+                        <h3>No orders found</h3>
+                        <p>Orders will appear here when customers submit projects</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ADDED: Order Details Page -->
+        <div id="order-details-page" class="order-details-page hidden">
+            <div class="order-details-header">
+                <h1><i class="fas fa-file-alt"></i> Order Details</h1>
+                <button onclick="backToDashboard()" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+            </div>
+            
+            <div class="order-details-content">
+                <div class="order-info-grid" id="order-details-info">
+                    <!-- Order details will be loaded here -->
+                </div>
+                
+                <!-- Tracking Section (shown for paid orders) -->
+                <div id="order-tracking-section" class="tracking-section hidden">
+                    <h3><i class="fas fa-truck"></i> Order Tracking Status</h3>
+                    <div class="tracking-steps" id="tracking-steps">
+                        <!-- Tracking steps will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Estimate Section (shown for pending/estimated orders) -->
+                <div id="order-estimate-section" class="estimate-section hidden">
+                    <h3><i class="fas fa-money-bill-wave"></i> Provide Estimate</h3>
+                    <div class="estimate-form">
+                        <div>
+                            <label for="order-estimate-price">Estimated Price (₹)</label>
+                            <input type="number" id="order-estimate-price" class="form-control" placeholder="Enter price" min="0">
+                        </div>
+                        <div>
+                            <label for="order-estimate-days">Delivery Days</label>
+                            <input type="number" id="order-estimate-days" class="form-control" placeholder="Enter days" min="1">
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <label for="order-staff-message">Staff Message (Optional)</label>
+                        <textarea id="order-staff-message" class="form-control" placeholder="Add any additional message or instructions for the customer..." rows="3"></textarea>
+                    </div>
+                    <div class="action-buttons">
+                        <button onclick="saveOrderEstimate()" class="btn btn-warning">
+                            <i class="fas fa-paper-plane"></i> Send Estimate
+                        </button>
+                        <button onclick="backToDashboard()" class="btn btn-outline">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Action buttons for paid orders -->
+                <div id="order-actions-paid" class="action-buttons hidden">
+                    <button onclick="viewPaymentScreenshot(currentOrderId)" class="btn btn-info">
+                        <i class="fas fa-receipt"></i> View Payment Receipt
+                    </button>
+                    <button onclick="backToDashboard()" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order Preview Modal (Kept for backward compatibility) -->
+    <div id="order-preview-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Order Preview & Estimation</h2>
+                <button onclick="closeEstimateModal()" class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="order-preview-grid">
+                    <div>
+                        <div class="preview-section">
+                            <h3>Customer Information</h3>
+                            <div class="preview-content" id="customer-info">
+                                <!-- Customer info will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="preview-section">
+                            <h3>Project Description</h3>
+                            <div class="preview-content" id="project-description">
+                                <!-- Project description will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="preview-section">
+                            <h3>Estimation</h3>
+                            <div class="form-row">
+                                <div>
+                                    <label for="estimate-price">Estimated Price (₹)</label>
+                                    <input type="number" id="estimate-price" class="form-control" placeholder="Enter price" min="0">
+                                </div>
+                                <div>
+                                    <label for="estimate-days">Delivery Days</label>
+                                    <input type="number" id="estimate-days" class="form-control" placeholder="Enter days" min="1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-section">
+                            <h3>Staff Message (Optional)</h3>
+                            <textarea id="staff-message" placeholder="Add any additional message or instructions for the customer..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button onclick="closeEstimateModal()" class="btn btn-outline">Cancel</button>
+                    <button onclick="saveEstimate()" class="btn btn-warning">
+                        <i class="fas fa-paper-plane"></i> Send Estimate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Screenshot Modal -->
+    <div id="screenshot-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Payment Receipt</h2>
+                <button onclick="closeScreenshotModal()" class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="screenshot-container">
+                    <!-- Screenshot will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ADDED: Firebase Status Indicator -->
+    <div id="firebase-status" class="firebase-status disconnected">
+        <span class="dot"></span>
+        <span>Firebase: Disconnected</span>
+    </div>
+
+    <!-- ADDED: Sync Status Indicator -->
+    <div id="sync-status" class="sync-status hidden">
+        <span class="sync-dot"></span>
+        <span>Syncing...</span>
+    </div>
+    
+    <!-- ADDED: Message Modal -->
+    <div id="message-modal" class="message-modal hidden">
+        <div class="message-modal-content">
+            <div class="message-modal-header">
+                <h3>Message Customer</h3>
+                <button onclick="closeMessageModal()" class="btn btn-sm btn-outline">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="message-modal-body">
+                <p id="message-customer-info" style="margin-bottom: 10px; color: #555;"></p>
+                <textarea id="message-text" placeholder="Type your message here..."></textarea>
+                <div class="message-modal-actions">
+                    <button onclick="closeMessageModal()" class="btn btn-outline">Cancel</button>
+                    <button onclick="sendCustomerMessage()" class="btn btn-success">
+                        <i class="fab fa-whatsapp"></i> Send via WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script>
+        // ==================== ADDED: ENHANCED DATA SYNCHRONIZATION ====================
+        let realTimeListenerActive = false;
+        let lastSyncTime = null;
+        let phase1OrdersQueue = [];
+        let messageCustomerData = null;
+
+        // ==================== ADDED: SETUP REAL-TIME SYNC WITH PHASE 1 ====================
+        function setupRealTimeSync() {
+            if (!firebaseInitialized || !database) {
+                console.log('⚠️ Firebase not initialized, cannot setup real-time sync');
+                return;
+            }
+
+            console.log('🔄 Setting up real-time sync with Phase 1...');
+            updateSyncStatus('syncing');
+
+            // Listen for new orders from Phase 1
+            database.ref('supernovaOrders').on('value', (snapshot) => {
+                const orders = snapshot.val();
+                console.log('📡 Real-time update received from Phase 1');
+                
+                if (orders && Array.isArray(orders)) {
+                    // Process new orders
+                    processPhase1Orders(orders);
+                    lastSyncTime = new Date();
+                    updateSyncStatus('synced');
+                    
+                    // Update sync status indicator
+                    setTimeout(() => {
+                        updateSyncStatus('idle');
+                    }, 2000);
+                }
+            });
+
+            // Also listen for public requests queue (backup mechanism)
+            database.ref('publicRequests').on('child_added', (snapshot) => {
+                const request = snapshot.val();
+                console.log('📨 New public request from Phase 1:', request);
+                
+                // Process the request
+                processPublicRequest(request);
+                
+                // Remove from queue after processing
+                database.ref('publicRequests').child(snapshot.key).remove()
+                    .then(() => console.log('✅ Removed processed request from queue'))
+                    .catch(err => console.error('❌ Error removing request:', err));
+            });
+
+            realTimeListenerActive = true;
+            console.log('✅ Real-time sync setup complete');
+        }
+
+        // ==================== ADDED: PROCESS PHASE 1 ORDERS ====================
+        function processPhase1Orders(orders) {
+            try {
+                console.log('🔄 Processing Phase 1 orders...');
+                
+                if (!Array.isArray(orders)) {
+                    console.log('⚠️ Orders data is not an array');
+                    return;
+                }
+
+                // Get current orders
+                const currentOrders = window.allOrders || [];
+                
+                // Find new orders (those not in currentOrders)
+                const newOrders = orders.filter(order => {
+                    if (!order || !order.id) return false;
+                    
+                    // Check if order already exists
+                    const exists = currentOrders.some(existingOrder => 
+                        existingOrder && existingOrder.id === order.id
+                    );
+                    
+                    return !exists;
+                });
+
+                console.log(`📊 Found ${newOrders.length} new orders from Phase 1`);
+
+                // Process each new order
+                newOrders.forEach(order => {
+                    processNewOrderFromPhase1(order);
+                });
+
+                // If there were new orders, update the UI
+                if (newOrders.length > 0) {
+                    // Update stats
+                    calculateStats();
+                    
+                    // Update orders table
+                    filterOrders();
+                    
+                    // Show notification for new orders
+                    showNewOrderNotification(newOrders.length);
+                }
+
+            } catch (error) {
+                console.error('❌ Error processing Phase 1 orders:', error);
+                showNotification('Error syncing with Phase 1: ' + error.message, 'error');
+            }
+        }
+
+        // ==================== ADDED: PROCESS NEW ORDER FROM PHASE 1 ====================
+        function processNewOrderFromPhase1(order) {
+            console.log('➕ Processing new order from Phase 1:', order.id);
+            
+            // Ensure order has all required fields
+            const processedOrder = {
+                id: order.id || Date.now(),
+                name: order.name || 'Unknown Customer',
+                email: order.email || '',
+                phone: order.phone || '',
+                type: order.type || 'student',
+                projectDescription: order.projectDescription || '',
+                status: 'pending',
+                paymentStatus: 'pending',
+                estimatedPrice: null,
+                estimatedDays: null,
+                staffMessage: '',
+                submittedAt: order.submittedAt || new Date().toISOString(),
+                estimatedAt: null,
+                address: order.address || null,
+                tracking: order.tracking || {
+                    confirmed: false,
+                    making: false,
+                    quality: false,
+                    dispatched: false,
+                    shipped: false,
+                    out: false,
+                    delivered: false
+                },
+                paymentScreenshot: null,
+                paymentMethod: null,
+                paidAt: null,
+                fromPhase1: true,
+                isNew: true
+            };
+
+            // Add to current orders array
+            if (!window.allOrders) window.allOrders = [];
+            window.allOrders.unshift(processedOrder);
+            
+            // Also add to Firebase for persistence
+            addOrderToFirebase(processedOrder);
+
+            console.log('✅ Added new order from Phase 1:', processedOrder.id);
+            return processedOrder;
+        }
+
+        // ==================== ADDED: ADD ORDER TO FIREBASE ====================
+        async function addOrderToFirebase(order) {
+            try {
+                // Get current orders from Firebase
+                const currentOrders = await loadOrdersFromFirebase();
+                
+                // Check if order already exists
+                const exists = currentOrders.some(o => o.id === order.id);
+                if (exists) {
+                    console.log('⚠️ Order already exists in Firebase:', order.id);
+                    return false;
+                }
+                
+                // Add new order
+                currentOrders.unshift(order);
+                
+                // Save to Firebase
+                const saved = await updateOrdersInFirebase(currentOrders);
+                if (saved) {
+                    console.log('✅ Order added to Firebase:', order.id);
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('❌ Error adding order to Firebase:', error);
+                return false;
+            }
+        }
+
+        // ==================== ADDED: PROCESS PUBLIC REQUEST ====================
+        function processPublicRequest(request) {
+            try {
+                console.log('📝 Processing public request:', request);
+                
+                // Check if this is a valid order request
+                if (!request || !request.name || !request.email) {
+                    console.log('⚠️ Invalid request format');
+                    return;
+                }
+                
+                // Create order object from request
+                const order = {
+                    id: request.id || Date.now(),
+                    name: request.name,
+                    email: request.email,
+                    phone: request.phone || '',
+                    type: request.type || 'student',
+                    projectDescription: request.projectDescription || request.description || '',
+                    status: 'pending',
+                    paymentStatus: 'pending',
+                    estimatedPrice: null,
+                    estimatedDays: null,
+                    staffMessage: '',
+                    submittedAt: request.submittedAt || request.timestamp || new Date().toISOString(),
+                    estimatedAt: null,
+                    address: request.address || null,
+                    tracking: request.tracking || {
+                        confirmed: false,
+                        making: false,
+                        quality: false,
+                        dispatched: false,
+                        shipped: false,
+                        out: false,
+                        delivered: false
+                    },
+                    paymentScreenshot: null,
+                    paymentMethod: null,
+                    paidAt: null,
+                    fromPhase1: true,
+                    isNew: true
+                };
+                
+                // Process as new order
+                processNewOrderFromPhase1(order);
+                
+            } catch (error) {
+                console.error('❌ Error processing public request:', error);
+            }
+        }
+
+        // ==================== ADDED: UPDATE SYNC STATUS ====================
+        function updateSyncStatus(status) {
+            const syncElem = document.getElementById('sync-status');
+            if (!syncElem) return;
+            
+            syncElem.classList.remove('hidden');
+            
+            switch(status) {
+                case 'syncing':
+                    syncElem.className = 'sync-status syncing';
+                    syncElem.innerHTML = '<span class="sync-dot"></span><span>Syncing with Phase 1...</span>';
+                    break;
+                case 'synced':
+                    syncElem.className = 'sync-status synced';
+                    const timeStr = lastSyncTime ? lastSyncTime.toLocaleTimeString() : 'Just now';
+                    syncElem.innerHTML = `<span class="sync-dot"></span><span>Synced: ${timeStr}</span>`;
+                    break;
+                case 'idle':
+                    syncElem.classList.add('hidden');
+                    break;
+            }
+        }
+
+        // ==================== ADDED: SHOW NEW ORDER NOTIFICATION ====================
+        function showNewOrderNotification(count) {
+            const notification = document.createElement('div');
+            notification.className = 'new-order-notification';
+            notification.innerHTML = `
+                <i class="fas fa-bell"></i>
+                <span>${count} new order${count > 1 ? 's' : ''} received from Phase 1!</span>
+                <button class="close-notification" onclick="this.parentElement.remove()">×</button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // ==================== ADDED: CUSTOMER MESSAGING SYSTEM ====================
+        function openMessageCustomer(orderId) {
+            const order = window.allOrders.find(o => o.id == orderId);
+            if (!order) {
+                showNotification('Order not found!', 'error');
+                return;
+            }
+            
+            // Store customer data
+            messageCustomerData = {
+                orderId: order.id,
+                name: order.name,
+                phone: order.phone,
+                email: order.email
+            };
+            
+            // Update modal info
+            document.getElementById('message-customer-info').innerHTML = `
+                Message for: <strong>${order.name}</strong><br>
+                Phone: ${order.phone || 'Not provided'}<br>
+                Order ID: #${order.id}
+            `;
+            
+            // Clear previous message
+            document.getElementById('message-text').value = '';
+            
+            // Show modal
+            document.getElementById('message-modal').classList.remove('hidden');
+        }
+
+        function closeMessageModal() {
+            document.getElementById('message-modal').classList.add('hidden');
+            messageCustomerData = null;
+        }
+
+        function sendCustomerMessage() {
+            if (!messageCustomerData) {
+                showNotification('No customer selected!', 'error');
+                return;
+            }
+            
+            const message = document.getElementById('message-text').value.trim();
+            if (!message) {
+                showNotification('Please enter a message!', 'error');
+                return;
+            }
+            
+            if (!messageCustomerData.phone) {
+                showNotification('Customer phone number not available!', 'error');
+                return;
+            }
+            
+            // Format WhatsApp message
+            const whatsappMessage = `Hello ${messageCustomerData.name},\n\n${message}\n\n- Supernova Team\nOrder ID: #${messageCustomerData.orderId}`;
+            const encodedMessage = encodeURIComponent(whatsappMessage);
+            
+            // Clean phone number (remove non-digits)
+            const phoneNumber = messageCustomerData.phone.replace(/\D/g, '');
+            
+            // Open WhatsApp
+            window.open(`https://wa.me/91${phoneNumber}?text=${encodedMessage}`, '_blank');
+            
+            // Close modal
+            closeMessageModal();
+            
+            // Show success notification
+            showNotification(`Message sent to ${messageCustomerData.name} via WhatsApp!`, 'success');
+            
+            // Log the message for reference
+            logCustomerMessage(messageCustomerData.orderId, message);
+        }
+
+        // ==================== ADDED: LOG CUSTOMER MESSAGES ====================
+        async function logCustomerMessage(orderId, message) {
+            try {
+                const order = window.allOrders.find(o => o.id == orderId);
+                if (!order) return;
+                
+                // Add message log to order
+                if (!order.messageLogs) {
+                    order.messageLogs = [];
+                }
+                
+                order.messageLogs.push({
+                    message: message,
+                    timestamp: new Date().toISOString(),
+                    sentBy: currentUser?.username || 'Staff',
+                    via: 'WhatsApp'
+                });
+                
+                // Update order in Firebase
+                await updateOrderInFirebase(order);
+                
+            } catch (error) {
+                console.error('❌ Error logging customer message:', error);
+            }
+        }
+
+        // ==================== ADDED: UPDATE ORDER IN FIREBASE ====================
+        async function updateOrderInFirebase(order) {
+            try {
+                const currentOrders = await loadOrdersFromFirebase();
+                const orderIndex = currentOrders.findIndex(o => o.id == order.id);
+                
+                if (orderIndex !== -1) {
+                    currentOrders[orderIndex] = order;
+                    await updateOrdersInFirebase(currentOrders);
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('❌ Error updating order in Firebase:', error);
+                return false;
+            }
+        }
+
+        // ==================== ADDED: ENHANCED RENDER ORDERS TABLE ====================
+        function renderOrdersTable() {
+            const tbody = document.getElementById('orders-table-body');
+            const noOrders = document.getElementById('no-orders');
+            
+            if (filteredOrders.length === 0) {
+                tbody.innerHTML = '';
+                noOrders.classList.remove('hidden');
+                return;
+            }
+            
+            noOrders.classList.add('hidden');
+            
+            tbody.innerHTML = filteredOrders.map(order => {
+                console.log('📋 Rendering order:', order.id, 'estimatedPrice:', order.estimatedPrice);
+                
+                const statusClass = order.paymentStatus === 'paid' ? 'badge-paid' : 
+                                  order.estimatedPrice ? 'badge-estimated' : 'badge-pending';
+                const statusText = order.paymentStatus === 'paid' ? 'Paid' : 
+                                  order.estimatedPrice ? 'Estimated' : 'Pending';
+                
+                const hasScreenshot = order.paymentStatus === 'paid' && order.paymentScreenshot;
+                
+                // ADDED: Message button for all orders with phone number
+                const messageButton = order.phone ? `
+                    <button onclick="openMessageCustomer(${order.id})" class="message-customer-btn">
+                        <i class="fab fa-whatsapp"></i> Message
+                    </button>
+                ` : '';
+                
+                // ADDED: New order indicator
+                const newIndicator = order.isNew ? `
+                    <span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 5px;">NEW</span>
+                ` : '';
+                
+                // ADDED: Different buttons based on order status
+                const actionButton = !order.estimatedPrice ? `
+                    <button onclick="openOrderDetails(${order.id}, 'estimate')" class="btn btn-warning btn-sm">
+                        <i class="fas fa-eye mr-1"></i>
+                        View & Estimate
+                    </button>
+                ` : order.paymentStatus === 'paid' ? `
+                    <button onclick="openOrderDetails(${order.id}, 'details')" class="btn btn-info btn-sm">
+                        <i class="fas fa-eye mr-1"></i>
+                        View Details
+                    </button>
+                ` : `
+                    <button onclick="openOrderDetails(${order.id}, 'details')" class="btn btn-outline btn-sm">
+                        <i class="fas fa-eye mr-1"></i>
+                        View
+                    </button>
+                `;
+                
+                return `
+                    <tr ${order.isNew ? 'style="background: #f0fdf4;"' : ''}>
+                        <td class="font-mono">
+                            #${order.id}
+                            ${newIndicator}
+                        </td>
+                        <td>
+                            <div class="font-semibold">${order.name || 'N/A'}</div>
+                            <div class="text-sm text-gray-600">${order.email || 'N/A'}</div>
+                        </td>
+                        <td>${order.phone || 'N/A'}</td>
+                        <td class="capitalize">${order.type || 'N/A'}</td>
+                        <td>
+                            <span class="badge ${statusClass}">${statusText}</span>
+                        </td>
+                        <td>
+                            ${order.estimatedPrice ? `₹${order.estimatedPrice}` : 'N/A'}
+                        </td>
+                        <td>
+                            ${hasScreenshot ? `
+                                <button onclick="viewPaymentScreenshot(${order.id})" class="btn btn-info btn-sm">
+                                    <i class="fas fa-receipt mr-1"></i>
+                                    View Receipt
+                                </button>
+                            ` : order.paymentMethod ? `
+                                <span class="text-sm">${order.paymentMethod}</span>
+                            ` : 'N/A'}
+                        </td>
+                        <td>
+                            <div class="flex gap-2">
+                                ${actionButton}
+                                ${messageButton}
+                                <button onclick="deleteOrder(${order.id})" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Clear new order flags after rendering
+            window.allOrders.forEach(order => {
+                if (order.isNew) {
+                    order.isNew = false;
+                }
+            });
+        }
+
+        // ==================== ADDED: ENHANCED INITIALIZATION ====================
+        function initializeApp() {
+            // Check if user is already logged in
+            const staff = localStorage.getItem('supernovaStaff');
+            if (staff) {
+                currentUser = JSON.parse(staff);
+                showDashboard();
+                
+                // ADDED: Setup real-time sync after login
+                setTimeout(() => {
+                    setupRealTimeSync();
+                }, 1000);
+            } else {
+                showLoginPage();
+            }
+
+            // Setup event listeners
+            setupEventListeners();
+        }
+
+        // ==================== ADDED: ENHANCED SHOW DASHBOARD ====================
+        function showDashboard() {
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('username-display').textContent = currentUser?.name || 'Admin';
+            
+            // Load orders when dashboard is shown
+            loadOrders();
+            
+            // ADDED: Show sync status
+            updateSyncStatus('syncing');
+        }
+
+        // ==================== ADDED: ENHANCED LOAD ORDERS ====================
+        async function loadOrders() {
+            try {
+                console.log('🔄 Loading orders...');
+                updateSyncStatus('syncing');
+                
+                // Load from Firebase
+                const orders = await loadOrdersFromFirebase();
+                
+                // Ensure all orders have proper structure
+                const processedOrders = orders.map(order => {
+                    // Ensure order has all required fields
+                    return {
+                        id: order.id || Date.now(),
+                        name: order.name || 'Unknown',
+                        email: order.email || '',
+                        phone: order.phone || '',
+                        type: order.type || 'student',
+                        projectDescription: order.projectDescription || '',
+                        status: order.status || 'pending',
+                        paymentStatus: order.paymentStatus || 'pending',
+                        estimatedPrice: order.estimatedPrice || null,
+                        estimatedDays: order.estimatedDays || null,
+                        staffMessage: order.staffMessage || '',
+                        submittedAt: order.submittedAt || new Date().toISOString(),
+                        estimatedAt: order.estimatedAt || null,
+                        address: order.address || null,
+                        tracking: order.tracking || {
+                            confirmed: false,
+                            making: false,
+                            quality: false,
+                            dispatched: false,
+                            shipped: false,
+                            out: false,
+                            delivered: false
+                        },
+                        paymentScreenshot: order.paymentScreenshot || null,
+                        paymentMethod: order.paymentMethod || null,
+                        paidAt: order.paidAt || null,
+                        fromPhase1: order.fromPhase1 || false,
+                        isNew: order.isNew || false
+                    };
+                });
+                
+                // Sort orders by submitted date (newest first)
+                window.allOrders = processedOrders.sort((a, b) => {
+                    const dateA = new Date(a.submittedAt || 0);
+                    const dateB = new Date(b.submittedAt || 0);
+                    return dateB - dateA;
+                });
+                
+                console.log(`📊 Staff Panel: Processed ${window.allOrders.length} orders`);
+                
+                // Update customers list
+                updateCustomersList();
+                
+                calculateStats();
+                filterOrders();
+                updateCustomersButton();
+                
+                updateSyncStatus('synced');
+                
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                showNotification('Error loading orders: ' + error.message, 'error');
+                updateSyncStatus('idle');
+            }
+        }
+
+        // ==================== EXISTING FIREBASE CODE (UNCHANGED) ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBf7aiAiw8TIHQ0V9Q2UhmiiJfEnXVCAFQ",
+            authDomain: "f-v-project.firebaseapp.com",
+            databaseURL: "https://f-v-project-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "f-v-project",
+            storageBucket: "f-v-project.firebasestorage.app",
+            messagingSenderId: "216300594106",
+            appId: "1:216300594106:web:f3ba7fcf66d7c432547383"
+        };
+        
+        // Initialize Firebase
+        let firebaseInitialized = false;
+        let database;
+        
+        try {
+            // Check if Firebase is already initialized
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            database = firebase.database();
+            firebaseInitialized = true;
+            console.log('✅ Firebase initialized successfully');
+            updateFirebaseStatus(true);
+        } catch (error) {
+            console.error('❌ Firebase initialization failed:', error);
+            updateFirebaseStatus(false);
+        }
+        
+        // Simple Firebase REST API functions (KEPT AS BACKUP)
+        const FIREBASE_URL = 'https://f-v-project-default-rtdb.asia-southeast1.firebasedatabase.app';
+        
+        // ENHANCED: Save data to Firebase using BOTH methods
+        async function saveToFirebase(key, data) {
+            try {
+                console.log('📤 Staff Panel: Saving to Firebase:', key, 'data length:', Array.isArray(data) ? data.length : 'N/A');
+                
+                // Try Firebase SDK first
+                if (firebaseInitialized && database) {
+                    await database.ref(key).set(data);
+                    console.log('✅ Staff Panel: Data saved to Firebase successfully (SDK)');
+                    updateFirebaseStatus(true);
+                    return true;
+                }
+                
+                // Fallback to REST API
+                const response = await fetch(`${FIREBASE_URL}/${key}.json`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    console.log('✅ Staff Panel: Data saved to Firebase successfully (REST API)');
+                    return true;
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Staff Panel: Firebase save failed:', errorText);
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Staff Panel: Firebase connection error:', error);
+                updateFirebaseStatus(false);
+                return false;
+            }
+        }
+        
+        // ENHANCED: Load data from Firebase using BOTH methods
+        async function loadFromFirebase(key) {
+            try {
+                console.log('📥 Staff Panel: Loading from Firebase:', key);
+                
+                // Try Firebase SDK first
+                if (firebaseInitialized && database) {
+                    const snapshot = await database.ref(key).once('value');
+                    const data = snapshot.val();
+                    console.log('✅ Staff Panel: Data loaded from Firebase (SDK)');
+                    updateFirebaseStatus(true);
+                    return data;
+                }
+                
+                // Fallback to REST API
+                const response = await fetch(`${FIREBASE_URL}/${key}.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Staff Panel: Data loaded from Firebase (REST API)');
+                    return data;
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Staff Panel: Firebase load failed:', errorText);
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Staff Panel: Firebase connection error:', error);
+                updateFirebaseStatus(false);
+                return null;
+            }
+        }
+        
+        // ADDED: Update Firebase status indicator
+        function updateFirebaseStatus(connected) {
+            const statusElem = document.getElementById('firebase-status');
+            if (statusElem) {
+                if (connected) {
+                    statusElem.className = 'firebase-status connected';
+                    statusElem.innerHTML = '<span class="dot"></span><span>Firebase: Connected</span>';
+                } else {
+                    statusElem.className = 'firebase-status disconnected';
+                    statusElem.innerHTML = '<span class="dot"></span><span>Firebase: Disconnected</span>';
+                }
+            }
+        }
+        
+        // Update orders in Firebase
+        async function updateOrdersInFirebase(orders) {
+            console.log('🔄 Staff Panel: Updating orders in Firebase, total orders:', orders.length);
+            return await saveToFirebase('supernovaOrders', orders);
+        }
+        
+        // Load orders from Firebase with proper data structure handling
+        async function loadOrdersFromFirebase() {
+            try {
+                console.log('🔄 Staff Panel: Loading orders from Firebase...');
+                const firebaseData = await loadFromFirebase('supernovaOrders');
+                
+                let orders = [];
+                
+                if (firebaseData === null || firebaseData === undefined) {
+                    console.log('⚠️ Staff Panel: Firebase returned null/undefined, using empty array');
+                    orders = [];
+                } else if (Array.isArray(firebaseData)) {
+                    orders = firebaseData.filter(order => order !== null && order !== undefined);
+                    console.log(`✅ Staff Panel: Loaded ${orders.length} orders from Firebase (array)`);
+                } else if (typeof firebaseData === 'object') {
+                    // Convert object to array
+                    orders = Object.values(firebaseData).filter(order => order !== null && order !== undefined);
+                    console.log(`✅ Staff Panel: Loaded ${orders.length} orders from Firebase (object converted to array)`);
+                }
+                
+                // Also save to localStorage for backup
+                localStorage.setItem('supernovaOrders', JSON.stringify(orders));
+                console.log('💾 Staff Panel: Saved orders to localStorage');
+                
+                return orders;
+            } catch (error) {
+                console.log('⚠️ Staff Panel: Failed to load from Firebase, using localStorage:', error);
+                // Fallback to localStorage
+                return JSON.parse(localStorage.getItem('supernovaOrders') || '[]');
+            }
+        }
+        
+        // ==================== EXISTING APPLICATION STATE ====================
+        let currentUser = null;
+        let allOrders = [];
+        let filteredOrders = [];
+        let customers = [];
+        let selectedCustomer = null;
+        let selectedOrderId = null;
+        let currentScreenshot = null;
+        let previewOrderData = null;
+        let currentOrderId = null;
+        let stats = {
+            total: 0,
+            pending: 0,
+            estimated: 0,
+            paid: 0,
+            delivered: 0
+        };
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🌐 Supernova Staff Panel Initializing...');
+            
+            initializeApp();
+            
+            console.log('🚀 Supernova Staff Panel Ready!');
+        });
+
+        function setupEventListeners() {
+            // Login form
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleLogin();
+            });
+
+            // Password toggle
+            document.getElementById('toggle-password').addEventListener('click', function() {
+                const passwordInput = document.getElementById('password');
+                const icon = this.querySelector('i');
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+
+            // Search input
+            document.getElementById('search-input').addEventListener('input', function() {
+                filterOrders();
+            });
+
+            // Status filter
+            document.getElementById('status-filter').addEventListener('change', function() {
+                filterOrders();
+            });
+            
+            // Refresh button
+            document.getElementById('refresh-btn').addEventListener('click', function() {
+                this.classList.add('loading');
+                loadOrders().finally(() => {
+                    setTimeout(() => this.classList.remove('loading'), 500);
+                });
+            });
+        }
+
+        function calculateStats() {
+            stats.total = window.allOrders.length;
+            stats.pending = window.allOrders.filter(o => !o.estimatedPrice).length;
+            stats.estimated = window.allOrders.filter(o => o.estimatedPrice && o.paymentStatus !== 'paid').length;
+            stats.paid = window.allOrders.filter(o => o.paymentStatus === 'paid').length;
+            stats.delivered = window.allOrders.filter(o => o.tracking?.delivered).length;
+            
+            console.log('📈 Stats calculated:', stats);
+            renderStats();
+        }
+
+        function renderStats() {
+            const statsData = [
+                { title: 'Total Orders', value: stats.total, icon: 'fa-box', color: 'bg-blue-500' },
+                { title: 'Pending', value: stats.pending, icon: 'fa-clock', color: 'bg-yellow-500' },
+                { title: 'Estimated', value: stats.estimated, icon: 'fa-money-bill', color: 'bg-purple-500' },
+                { title: 'Paid', value: stats.paid, icon: 'fa-check-circle', color: 'bg-green-500' },
+                { title: 'Delivered', value: stats.delivered, icon: 'fa-truck', color: 'bg-teal-500' }
+            ];
+            
+            const container = document.getElementById('stats-container');
+            container.innerHTML = statsData.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-icon ${stat.color}">
+                        <i class="fas ${stat.icon}"></i>
+                    </div>
+                    <div class="stat-value">${stat.value}</div>
+                    <div class="stat-label">${stat.title}</div>
+                </div>
+            `).join('');
+        }
+
+        function filterOrders() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            
+            filteredOrders = window.allOrders.filter(order => {
+                // Search filter
+                const matchesSearch = 
+                    order.name?.toLowerCase().includes(searchTerm) ||
+                    order.email?.toLowerCase().includes(searchTerm) ||
+                    order.phone?.toLowerCase().includes(searchTerm) ||
+                    order.id.toString().includes(searchTerm);
+                
+                // Status filter
+                let matchesStatus = true;
+                if (statusFilter !== 'all') {
+                    if (statusFilter === 'pending') {
+                        matchesStatus = !order.estimatedPrice;
+                    } else if (statusFilter === 'estimated') {
+                        matchesStatus = order.estimatedPrice && order.paymentStatus !== 'paid';
+                    } else if (statusFilter === 'paid') {
+                        matchesStatus = order.paymentStatus === 'paid';
+                    }
+                }
+                
+                return matchesSearch && matchesStatus;
+            });
+            
+            renderOrdersTable();
+        }
+        
+        // ADDED: Open Order Details Page
+        function openOrderDetails(orderId, mode = 'details') {
+            const order = window.allOrders.find(o => o.id == orderId);
+            if (!order) {
+                showNotification('Order not found!', 'error');
+                return;
+            }
+            
+            currentOrderId = orderId;
+            
+            // Hide dashboard and show order details page
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('order-details-page').classList.remove('hidden');
+            
+            // Render order details
+            renderOrderDetails(order);
+            
+            // Show appropriate sections based on mode
+            if (mode === 'estimate') {
+                // Show estimate section for pending orders
+                document.getElementById('order-estimate-section').classList.remove('hidden');
+                document.getElementById('order-tracking-section').classList.add('hidden');
+                document.getElementById('order-actions-paid').classList.add('hidden');
+                
+                // Pre-fill estimate form if already has estimate
+                if (order.estimatedPrice) {
+                    document.getElementById('order-estimate-price').value = order.estimatedPrice;
+                    document.getElementById('order-estimate-days').value = order.estimatedDays;
+                    document.getElementById('order-staff-message').value = order.staffMessage || '';
+                }
+            } else {
+                // Show details for estimated/paid orders
+                document.getElementById('order-estimate-section').classList.add('hidden');
+                
+                if (order.paymentStatus === 'paid') {
+                    // Show tracking for paid orders
+                    document.getElementById('order-tracking-section').classList.remove('hidden');
+                    document.getElementById('order-actions-paid').classList.remove('hidden');
+                    
+                    // Render tracking steps
+                    renderTrackingSteps(order);
+                } else {
+                    document.getElementById('order-tracking-section').classList.add('hidden');
+                    document.getElementById('order-actions-paid').classList.add('hidden');
+                }
+            }
+        }
+        
+        // ADDED: Render Order Details
+        function renderOrderDetails(order) {
+            const container = document.getElementById('order-details-info');
+            
+            // FIXED: Better address formatting with proper alignment
+            let addressHtml = 'No address provided';
+            if (order.address) {
+                if (typeof order.address === 'string') {
+                    // If address is a simple string
+                    addressHtml = `<div class="address-details">${order.address}</div>`;
+                } else if (order.address.house) {
+                    // If address is an object with properties
+                    addressHtml = `
+                        <div class="address-details">
+                            <span class="address-line">${order.address.house || ''}</span>
+                            <span class="address-line">${order.address.colony || ''}</span>
+                            <span class="address-line">${order.address.place || ''}</span>
+                            <span class="address-line">${order.address.district || ''}</span>
+                        </div>
+                    `;
+                } else if (typeof order.address === 'object') {
+                    // Generic object address
+                    const addressParts = Object.values(order.address).filter(val => val);
+                    addressHtml = `<div class="address-details">${addressParts.join(', ')}</div>`;
+                }
+            }
+            
+            // Format date
+            const submittedDate = order.submittedAt ? new Date(order.submittedAt).toLocaleString() : 'N/A';
+            const estimatedDate = order.estimatedAt ? new Date(order.estimatedAt).toLocaleString() : 'N/A';
+            const paidDate = order.paidAt ? new Date(order.paidAt).toLocaleString() : 'N/A';
+            
+            container.innerHTML = `
+                <!-- Customer Information -->
+                <div class="order-info-card">
+                    <h3><i class="fas fa-user"></i> Customer Information</h3>
+                    <div class="info-item">
+                        <span class="info-label">Order ID:</span>
+                        <span class="info-value">#${order.id}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Customer Name:</span>
+                        <span class="info-value">${order.name || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">${order.email || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Phone:</span>
+                        <span class="info-value">${order.phone || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Project Type:</span>
+                        <span class="info-value">${order.type ? order.type.charAt(0).toUpperCase() + order.type.slice(1) : 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Submitted Date:</span>
+                        <span class="info-value">${submittedDate}</span>
+                    </div>
+                    ${order.fromPhase1 ? `
+                        <div class="info-item">
+                            <span class="info-label">Source:</span>
+                            <span class="info-value" style="color: #10b981; font-weight: 600;">
+                                <i class="fas fa-user"></i> Phase 1 Customer
+                            </span>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <!-- Project Details -->
+                <div class="order-info-card">
+                    <h3><i class="fas fa-lightbulb"></i> Project Details</h3>
+                    <div class="info-item">
+                        <span class="info-label">Project Description:</span>
+                        <span class="info-value">${order.projectDescription || 'No description provided'}</span>
+                    </div>
+                    ${order.estimatedPrice ? `
+                        <div class="info-item">
+                            <span class="info-label">Estimated Price:</span>
+                            <span class="info-value">₹${order.estimatedPrice}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Delivery Days:</span>
+                            <span class="info-value">${order.estimatedDays} days</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Estimated Date:</span>
+                            <span class="info-value">${estimatedDate}</span>
+                        </div>
+                    ` : ''}
+                    ${order.staffMessage ? `
+                        <div class="info-item">
+                            <span class="info-label">Staff Message:</span>
+                            <span class="info-value">${order.staffMessage}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <!-- Payment & Address -->
+                <div class="order-info-card">
+                    <h3><i class="fas fa-map-marker-alt"></i> Address & Payment</h3>
+                    <div class="info-item">
+                        <span class="info-label">Delivery Address:</span>
+                        <div class="info-value">
+                            ${addressHtml}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Payment Status:</span>
+                        <span class="info-value">
+                            <span class="badge ${order.paymentStatus === 'paid' ? 'badge-paid' : order.estimatedPrice ? 'badge-estimated' : 'badge-pending'}">
+                                ${order.paymentStatus === 'paid' ? 'Paid' : order.estimatedPrice ? 'Estimated' : 'Pending'}
+                            </span>
+                        </span>
+                    </div>
+                    ${order.paymentStatus === 'paid' ? `
+                        <div class="info-item">
+                            <span class="info-label">Payment Method:</span>
+                            <span class="info-value">${order.paymentMethod || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Paid Date:</span>
+                            <span class="info-value">${paidDate}</span>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        // ADDED: Render Tracking Steps
+        function renderTrackingSteps(order) {
+            const container = document.getElementById('tracking-steps');
+            
+            const trackingSteps = [
+                { key: 'confirmed', label: 'Order Confirmed', icon: 'fa-check-circle' },
+                { key: 'making', label: 'Making', icon: 'fa-cogs' },
+                { key: 'quality', label: 'Quality Check', icon: 'fa-clipboard-check' },
+                { key: 'dispatched', label: 'Dispatched', icon: 'fa-shipping-fast' },
+                { key: 'shipped', label: 'Shipped', icon: 'fa-truck' },
+                { key: 'out', label: 'Out for Delivery', icon: 'fa-motorcycle' },
+                { key: 'delivered', label: 'Delivered', icon: 'fa-home' }
+            ];
+            
+            container.innerHTML = trackingSteps.map(step => {
+                const isCompleted = order.tracking && order.tracking[step.key];
+                const stepClass = isCompleted ? 'completed' : '';
+                
+                return `
+                    <div class="tracking-step ${stepClass}" onclick="toggleTrackingStep('${step.key}')">
+                        <div class="step-header">
+                            <div class="step-icon">
+                                <i class="fas ${step.icon}"></i>
+                            </div>
+                            <div class="step-checkbox"></div>
+                        </div>
+                        <div class="step-label">${step.label}</div>
+                        ${isCompleted && step.key === 'delivered' && order.tracking.deliveredAt ? `
+                            <div class="step-date">
+                                Delivered: ${new Date(order.tracking.deliveredAt).toLocaleDateString()}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // FIXED: Toggle Tracking Step - Fixed the "Assignment to constant variable" error
+        async function toggleTrackingStep(stepKey) {
+            if (!currentOrderId) return;
+            
+            try {
+                const currentOrders = await loadOrdersFromFirebase();
+                const orderIndex = currentOrders.findIndex(order => order.id == currentOrderId);
+                
+                if (orderIndex === -1) {
+                    showNotification('Order not found!', 'error');
+                    return;
+                }
+                
+                // Toggle the tracking status
+                const currentStatus = currentOrders[orderIndex].tracking[stepKey] || false;
+                currentOrders[orderIndex].tracking[stepKey] = !currentStatus;
+                
+                // If delivered, set delivered date
+                if (stepKey === 'delivered' && !currentStatus) {
+                    currentOrders[orderIndex].tracking.deliveredAt = new Date().toISOString();
+                } else if (stepKey === 'delivered' && currentStatus) {
+                    currentOrders[orderIndex].tracking.deliveredAt = null;
+                }
+                
+                // Save to Firebase
+                const saved = await updateOrdersInFirebase(currentOrders);
+                
+                if (saved) {
+                    // Update local state - Use window.allOrders to avoid const error
+                    const updatedAllOrders = await loadOrdersFromFirebase();
+                    window.allOrders = updatedAllOrders.sort((a, b) => {
+                        const dateA = new Date(a.submittedAt || 0);
+                        const dateB = new Date(b.submittedAt || 0);
+                        return dateB - dateA;
+                    });
+                    
+                    // Refresh the order details view
+                    const order = currentOrders[orderIndex];
+                    renderOrderDetails(order);
+                    renderTrackingSteps(order);
+                    
+                    showNotification('Tracking status updated!', 'success');
+                } else {
+                    showNotification('Failed to update tracking status', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating tracking:', error);
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+        
+        // ADDED: Save Estimate from Order Details Page
+        async function saveOrderEstimate() {
+            const price = document.getElementById('order-estimate-price').value;
+            const days = document.getElementById('order-estimate-days').value;
+            const message = document.getElementById('order-staff-message').value;
+            
+            if (!price || !days) {
+                showNotification('Please enter both price and days!', 'error');
+                return;
+            }
+            
+            if (price <= 0 || days <= 0) {
+                showNotification('Price and days must be positive numbers!', 'error');
+                return;
+            }
+            
+            console.log(`💸 Staff Panel: Saving estimate for order ${currentOrderId}`);
+            
+            try {
+                // Load current orders from Firebase
+                const currentOrders = await loadOrdersFromFirebase();
+                
+                // Find the order index
+                const orderIndex = currentOrders.findIndex(order => order.id == currentOrderId);
+                
+                if (orderIndex === -1) {
+                    showNotification('Order not found!', 'error');
+                    return;
+                }
+                
+                // Update the order
+                currentOrders[orderIndex] = {
+                    ...currentOrders[orderIndex],
+                    estimatedPrice: parseFloat(price),
+                    estimatedDays: parseInt(days),
+                    staffMessage: message,
+                    estimatedAt: new Date().toISOString(),
+                    status: 'estimated',
+                    paymentStatus: currentOrders[orderIndex].paymentStatus || 'pending'
+                };
+                
+                // Save to Firebase
+                const firebaseSaved = await updateOrdersInFirebase(currentOrders);
+                
+                if (firebaseSaved) {
+                    // Also save to localStorage for backup
+                    localStorage.setItem('supernovaOrders', JSON.stringify(currentOrders));
+                    
+                    // Update local state - Use window.allOrders to avoid const error
+                    const updatedAllOrders = await loadOrdersFromFirebase();
+                    window.allOrders = updatedAllOrders.sort((a, b) => {
+                        const dateA = new Date(a.submittedAt || 0);
+                        const dateB = new Date(b.submittedAt || 0);
+                        return dateB - dateA;
+                    });
+                    
+                    // Show success message and go back to dashboard
+                    showNotification('✅ Estimate sent successfully! Customer will see it in their dashboard.', 'success');
+                    
+                    // Send WhatsApp notification (optional)
+                    const customerOrder = currentOrders[orderIndex];
+                    if (customerOrder.phone) {
+                        const whatsappMsg = `Hello ${customerOrder.name}!%0A%0AYour project estimate is ready:%0A%0A📦 Order ID: #${customerOrder.id}%0A💰 Estimated Price: ₹${price}%0A📅 Delivery Time: ${days} days%0A📝 Message: ${message || 'No additional message'}%0A%0ALogin to your dashboard to view details and proceed with payment.`;
+                        window.open(`https://wa.me/91${customerOrder.phone.replace(/\D/g, '')}?text=${whatsappMsg}`, '_blank');
+                    }
+                    
+                    // Go back to dashboard
+                    backToDashboard();
+                } else {
+                    showNotification('❌ Failed to save estimate to Firebase. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Staff Panel: Error saving estimate:', error);
+                showNotification('Error saving estimate: ' + error.message, 'error');
+            }
+        }
+        
+        // ADDED: Back to Dashboard function
+        function backToDashboard() {
+            document.getElementById('order-details-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            currentOrderId = null;
+            
+            // Refresh orders list
+            loadOrders();
+        }
+
+        // FIXED: Save Estimate Function (for modal)
+        async function saveEstimate() {
+            const price = document.getElementById('estimate-price').value;
+            const days = document.getElementById('estimate-days').value;
+            const message = document.getElementById('staff-message').value;
+            
+            if (!price || !days) {
+                showNotification('Please enter both price and days!', 'error');
+                return;
+            }
+            
+            if (price <= 0 || days <= 0) {
+                showNotification('Price and days must be positive numbers!', 'error');
+                return;
+            }
+            
+            console.log(`💸 Staff Panel: Saving estimate for order ${selectedOrderId}`);
+            console.log(`📊 Price: ₹${price}, Days: ${days}, Message: ${message}`);
+            
+            try {
+                // Load current orders from Firebase
+                const currentOrders = await loadOrdersFromFirebase();
+                console.log(`📋 Staff Panel: Loaded ${currentOrders.length} orders before update`);
+                
+                // Find the order index
+                const orderIndex = currentOrders.findIndex(order => order.id == selectedOrderId);
+                
+                if (orderIndex === -1) {
+                    showNotification('Order not found!', 'error');
+                    return;
+                }
+                
+                console.log('🎯 Staff Panel: Found order at index:', orderIndex);
+                console.log('📄 Order before update:', currentOrders[orderIndex]);
+                
+                // Update the order
+                currentOrders[orderIndex] = {
+                    ...currentOrders[orderIndex],
+                    estimatedPrice: parseFloat(price),
+                    estimatedDays: parseInt(days),
+                    staffMessage: message,
+                    estimatedAt: new Date().toISOString(),
+                    status: 'estimated',
+                    paymentStatus: currentOrders[orderIndex].paymentStatus || 'pending'
+                };
+                
+                console.log('📄 Order after update:', currentOrders[orderIndex]);
+                
+                // Save to Firebase
+                console.log('💾 Staff Panel: Saving updated orders to Firebase...');
+                const firebaseSaved = await updateOrdersInFirebase(currentOrders);
+                
+                if (firebaseSaved) {
+                    console.log('✅ Staff Panel: Estimate saved to Firebase successfully');
+                    
+                    // Also save to localStorage for backup
+                    localStorage.setItem('supernovaOrders', JSON.stringify(currentOrders));
+                    console.log('💾 Staff Panel: Also saved to localStorage');
+                    
+                    // Update local state - Use window.allOrders to avoid const error
+                    const updatedAllOrders = await loadOrdersFromFirebase();
+                    window.allOrders = updatedAllOrders.sort((a, b) => {
+                        const dateA = new Date(a.submittedAt || 0);
+                        const dateB = new Date(b.submittedAt || 0);
+                        return dateB - dateA;
+                    });
+                    
+                    closeEstimateModal();
+                    
+                    // Reload orders to show updated status
+                    await loadOrders();
+                    
+                    showNotification('✅ Estimate sent successfully! Customer will see it in their dashboard.', 'success');
+                    
+                    // Send WhatsApp notification (optional)
+                    const customerOrder = currentOrders[orderIndex];
+                    if (customerOrder.phone) {
+                        const whatsappMsg = `Hello ${customerOrder.name}!%0A%0AYour project estimate is ready:%0A%0A📦 Order ID: #${customerOrder.id}%0A💰 Estimated Price: ₹${price}%0A📅 Delivery Time: ${days} days%0A📝 Message: ${message || 'No additional message'}%0A%0ALogin to your dashboard to view details and proceed with payment.`;
+                        window.open(`https://wa.me/91${customerOrder.phone.replace(/\D/g, '')}?text=${whatsappMsg}`, '_blank');
+                    }
+                    
+                } else {
+                    showNotification('❌ Failed to save estimate to Firebase. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Staff Panel: Error saving estimate:', error);
+                showNotification('Error saving estimate: ' + error.message, 'error');
+            }
+        }
+
+        function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple authentication (you should use proper authentication in production)
+            if (username === 'electroman' && password === 'farhan@786') {
+                currentUser = {
+                    username: username,
+                    name: '',
+                    role: ''
+                };
+                
+                localStorage.setItem('supernovaStaff', JSON.stringify(currentUser));
+                showDashboard();
+                showNotification('Login successful!', 'success');
+            } else {
+                showNotification('Invalid username or password!', 'error');
+            }
+        }
+        
+        function showLoginPage() {
+            document.getElementById('login-page').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+        }
+        
+        function logout() {
+            localStorage.removeItem('supernovaStaff');
+            currentUser = null;
+            showLoginPage();
+            showNotification('Logged out successfully!', 'success');
+        }
+        
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, duration);
+        }
+        
+        function openOrderPreview(orderId) {
+            const order = window.allOrders.find(o => o.id == orderId);
+            if (!order) return;
+            
+            selectedOrderId = orderId;
+            previewOrderData = order;
+            
+            // Populate customer info
+            document.getElementById('customer-info').innerHTML = `
+                <p><strong>Name:</strong> ${order.name || 'N/A'}</p>
+                <p><strong>Email:</strong> ${order.email || 'N/A'}</p>
+                <p><strong>Phone:</strong> ${order.phone || 'N/A'}</p>
+                <p><strong>Type:</strong> ${order.type || 'N/A'}</p>
+                ${order.address ? `<p><strong>Address:</strong> ${order.address}</p>` : ''}
+            `;
+            
+            // Populate project description
+            document.getElementById('project-description').innerHTML = `
+                <p>${order.projectDescription || 'No description provided'}</p>
+            `;
+            
+            // Reset form fields
+            document.getElementById('estimate-price').value = '';
+            document.getElementById('estimate-days').value = '';
+            document.getElementById('staff-message').value = '';
+            
+            // Show modal
+            document.getElementById('order-preview-modal').classList.add('active');
+        }
+        
+        function closeEstimateModal() {
+            document.getElementById('order-preview-modal').classList.remove('active');
+            selectedOrderId = null;
+            previewOrderData = null;
+        }
+        
+        function deleteOrder(orderId) {
+            if (!confirm('Are you sure you want to delete this order?')) return;
+            
+            window.allOrders = window.allOrders.filter(order => order.id != orderId);
+            updateOrdersInFirebase(window.allOrders);
+            loadOrders();
+            showNotification('Order deleted successfully!', 'success');
+        }
+        
+        function viewPaymentScreenshot(orderId) {
+            const order = window.allOrders.find(o => o.id == orderId);
+            if (!order || !order.paymentScreenshot) {
+                showNotification('No payment screenshot available', 'warning');
+                return;
+            }
+            
+            currentScreenshot = order.paymentScreenshot;
+            document.getElementById('screenshot-container').innerHTML = `
+                <img src="${order.paymentScreenshot}" alt="Payment Receipt" style="max-width: 100%; border-radius: 10px;">
+            `;
+            document.getElementById('screenshot-modal').classList.add('active');
+        }
+        
+        function closeScreenshotModal() {
+            document.getElementById('screenshot-modal').classList.remove('active');
+            currentScreenshot = null;
+        }
+        
+        function showOrderDetails(orderId) {
+            // This is the old function, now replaced by openOrderDetails
+            openOrderDetails(orderId, 'details');
+        }
+        
+        function updateCustomersList() {
+            customers = [];
+            const customerMap = new Map();
+            
+            window.allOrders.forEach(order => {
+                if (!customerMap.has(order.email) && order.email) {
+                    customerMap.set(order.email, {
+                        name: order.name,
+                        email: order.email,
+                        phone: order.phone,
+                        orders: [],
+                        totalSpent: 0
+                    });
+                }
+                
+                if (order.email) {
+                    const customer = customerMap.get(order.email);
+                    customer.orders.push(order);
+                    if (order.paymentStatus === 'paid' && order.estimatedPrice) {
+                        customer.totalSpent += order.estimatedPrice;
+                    }
+                }
+            });
+            
+            customers = Array.from(customerMap.values());
+        }
+        
+        function updateCustomersButton() {
+            // This function can be used to update a customers button if you have one
+        }
+        
+        // Initialize the app
+        initializeApp();
+        
+    </script>
+</body>
+</html>
