@@ -1,2 +1,0 @@
-# zynex
-project selling
